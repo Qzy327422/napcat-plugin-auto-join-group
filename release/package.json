@@ -1,0 +1,14 @@
+{
+  "name": "napcat-plugin-auto-join-group",
+  "version": "1.0.0",
+  "description": "自动同意被邀请进群",
+  "main": "index.mjs",
+  "author": "WDNMD",
+  "license": "MIT",
+  "napcat": {
+    "plugin": "自动进群",
+    "minVersion": "4.14.0",
+    "homepage": "https://github.com/yourname/napcat-plugin-auto-join-group",
+    "tags": ["群管理", "自动化"]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "napcat-plugin-simple-like",
+  "plugin": "赞我",   
+  "version": "1.0.0",
+  "description": "发送'赞我'即可自动点赞10次",
+  "main": "index.mjs",
+  "author": "WDNMD",
+  "license": "MIT",
+  "napcat": {
+    "plugin": "赞我插件",
+    "minVersion": "4.14.0",
+    "homepage": "",
+    "tags": ["实用工具", "互动"]
+  }
+}

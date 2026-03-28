@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自动进群管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e1f5fe 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            color: white;
+            padding: 25px 30px;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .tab {
+            padding: 12px 25px;
+            background: #f8f9fa;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #666;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #4CAF50;
+            border-bottom: 3px solid #4CAF50;
+            margin-bottom: -2px;
+        }
+        
+        .tab:hover {
+            background: #e9ecef;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .card h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .card h2 i {
+            font-size: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        .checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox input {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #4CAF50;
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .history-table th,
+        .history-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .history-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .history-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .message {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                border-radius: 8px;
+                margin-bottom: 5px;
+            }
+            
+            .history-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 自动进群插件</h1>
+            <p>自动同意被邀请加入群聊</p>
+        </div>
+        
+        <div class="content">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('config')">⚙️ 配置</button>
+                <button class="tab" onclick="switchTab('stats')">📊 统计</button>
+                <button class="tab" onclick="switchTab('history')">📜 记录</button>
+            </div>
+            
+            <div id="message" class="message"></div>
+            
+            <!-- 配置页 -->
+            <div id="config-tab" class="tab-content active">
+                <div class="card">
+                    <h2>⚙️ 基本设置</h2>
+                    
+                    <div class="form-group">
+                        <div class="checkbox">
+                            <input type="checkbox" id="enabled">
+                            <label for="enabled">启用插件</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="checkbox">
+                            <input type="checkbox" id="debug">
+                            <label for="debug">调试模式</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="checkbox">
+                            <input type="checkbox" id="autoJoinGroup">
+                            <label for="autoJoinGroup">自动同意进群</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="checkbox">
+                            <input type="checkbox" id="requireFriendInvite">
+                            <label for="requireFriendInvite">仅限好友邀请</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="maxGroupsPerDay">每日最多进群数 (0=无限制)</label>
+                        <input type="number" id="maxGroupsPerDay" min="0" max="100" value="10">
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="saveConfig()">保存配置</button>
+                    <button class="btn btn-secondary" onclick="loadConfig()">刷新配置</button>
+                </div>
+            </div>
+            
+            <!-- 统计页 -->
+            <div id="stats-tab" class="tab-content">
+                <div class="card">
+                    <h2>📊 进群统计</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">今日进群数</div>
+                            <div class="stat-value" id="todayCount">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">总进群数</div>
+                            <div class="stat-value" id="totalCount">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">当日限制</div>
+                            <div class="stat-value" id="dailyLimit">10</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">剩余名额</div>
+                            <div class="stat-value" id="remainingSlots">10</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="loadStats()">刷新统计</button>
+                    <button class="btn btn-secondary" onclick="resetStats()">重置统计</button>
+                </div>
+            </div>
+            
+            <!-- 记录页 -->
+            <div id="history-tab" class="tab-content">
+                <div class="card">
+                    <h2>📜 进群记录</h2>
+                    <div id="history-container">
+                        <!-- 历史记录将通过JS动态加载 -->
+                        <div class="empty-state">
+                            <div>📭</div>
+                            <p>暂无进群记录</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PLUGIN_NAME = window.location.pathname.match(/\/plugins\/([^/]+)/)?.[1] || 'auto-join-group';
+        const API_BASE = `/api/plugin/${PLUGIN_NAME}`;
+        
+        // 切换标签页
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+        
+        // 显示消息
+        function showMessage(text, type = 'success') {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+            
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 加载配置
+        async function loadConfig() {
+            try {
+                const response = await fetch(`${API_BASE}/config`);
+                const result = await response.json();
+                
+                if (result.code === 0) {
+                    const config = result.data;
+                    
+                    document.getElementById('enabled').checked = config.enabled;
+                    document.getElementById('debug').checked = config.debug;
+                    document.getElementById('autoJoinGroup').checked = config.autoJoinGroup;
+                    document.getElementById('requireFriendInvite').checked = config.requireFriendInvite;
+                    document.getElementById('maxGroupsPerDay').value = config.maxGroupsPerDay;
+                    
+                    showMessage('配置加载成功');
+                }
+            } catch (error) {
+                console.error('加载配置失败:', error);
+                showMessage('加载配置失败', 'error');
+            }
+        }
+        
+        // 保存配置
+        async function saveConfig() {
+            const config = {
+                enabled: document.getElementById('enabled').checked,
+                debug: document.getElementById('debug').checked,
+                autoJoinGroup: document.getElementById('autoJoinGroup').checked,
+                requireFriendInvite: document.getElementById('requireFriendInvite').checked,
+                maxGroupsPerDay: parseInt(document.getElementById('maxGroupsPerDay').value)
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(config)
+                });
+                
+                const result = await response.json();
+                
+                if (result.code === 0) {
+                    showMessage('配置保存成功');
+                    loadStats(); // 刷新统计
+                } else {
+                    showMessage('保存失败: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('保存配置失败:', error);
+                showMessage('保存配置失败', 'error');
+            }
+        }
+        
+        // 加载统计
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE}/status`);
+                const result = await response.json();
+                
+                if (result.code === 0) {
+                    const data = result.data;
+                    
+                    document.getElementById('todayCount').textContent = data.statistics.todayCount;
+                    document.getElementById('totalCount').textContent = data.statistics.totalCount;
+                    document.getElementById('dailyLimit').textContent = data.config.maxGroupsPerDay || '无限制';
+                    
+                    const maxGroups = data.config.maxGroupsPerDay || 0;
+                    if (maxGroups > 0) {
+                        const remaining = maxGroups - data.statistics.todayCount;
+                        document.getElementById('remainingSlots').textContent = Math.max(0, remaining);
+                    } else {
+                        document.getElementById('remainingSlots').textContent = '无限制';
+                    }
+                }
+            } catch (error) {
+                console.error('加载统计失败:', error);
+                showMessage('加载统计失败', 'error');
+            }
+        }
+        
+        // 重置统计
+        async function resetStats() {
+            if (!confirm('确定要重置统计数据吗？')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/reset-stats`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (result.code === 0) {
+                    showMessage('统计数据已重置');
+                    loadStats();
+                    loadHistory();
+                } else {
+                    showMessage('重置失败: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('重置统计失败:', error);
+                showMessage('重置统计失败', 'error');
+            }
+        }
+        
+        // 加载历史记录
+        async function loadHistory() {
+            try {
+                const response = await fetch(`${API_BASE}/history`);
+                const result = await response.json();
+                
+                const container = document.getElementById('history-container');
+                
+                if (result.code === 0 && result.data.history.length > 0) {
+                    const history = result.data.history.reverse(); // 最新的在前
+                    
+                    let html = '<table class="history-table">';
+                    html += '<tr><th>时间</th><th>群名</th><th>邀请人</th><th>群号</th></tr>';
+                    
+                    history.forEach(record => {
+                        const time = new Date(record.timestamp).toLocaleString();
+                        html += `
+                            <tr>
+                                <td>${time}</td>
+                                <td>${record.groupName}</td>
+                                <td>${record.inviterName}</td>
+                                <td>${record.groupId}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += '</table>';
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div>📭</div>
+                            <p>暂无进群记录</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('加载历史记录失败:', error);
+            }
+        }
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadConfig();
+            loadStats();
+            loadHistory();
+            
+            // 每30秒刷新一次统计
+            setInterval(() => {
+                if (document.getElementById('stats-tab').classList.contains('active')) {
+                    loadStats();
+                }
+            }, 30000);
+        });
+    </script>
+</body>
+</html>
